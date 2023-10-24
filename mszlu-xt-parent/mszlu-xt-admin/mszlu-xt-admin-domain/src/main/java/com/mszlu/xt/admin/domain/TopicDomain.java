@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cglib.beans.BeanCopier;
+import org.springframework.context.annotation.Bean;
 
 import java.util.*;
 
@@ -91,4 +92,22 @@ public class TopicDomain {
         return CallResult.success(listModel);
     }
 
+    public TopicModel findTopicByTitle() {
+        Topic topic = this.topicDomainRepository.findTopicByTitle(this.topicParam.getTopicTitle());
+        return copy(topic);
+    }
+
+    public CallResult<Object> updateTopic() {
+        Topic topic = new Topic();
+        BeanUtils.copyProperties(this.topicParam, topic);
+        this.topicDomainRepository.update(topic);
+        return CallResult.success();
+    }
+
+    public CallResult<Object> saveTopic() {
+        Topic topic = new Topic();
+        BeanUtils.copyProperties(this.topicParam, topic);
+        this.topicDomainRepository.save(topic);
+        return CallResult.success();
+    }
 }

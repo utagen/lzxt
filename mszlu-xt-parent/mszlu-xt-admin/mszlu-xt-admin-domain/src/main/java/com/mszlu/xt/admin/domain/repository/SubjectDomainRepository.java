@@ -80,4 +80,8 @@ public class SubjectDomainRepository {
     public List<Subject> findAll() {
         return subjectMapper.selectList(new LambdaQueryWrapper<>());
     }
+
+    public List<Subject> findSubjectListByCourseId(Long courseId) {
+        return this.subjectMapper.findSubjectListByCourseId(courseId);
+    }
 }

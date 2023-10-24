@@ -36,4 +36,17 @@ public class TopicParam {
     private String subjectName;
     private String subjectGrade;
     private String subjectTerm;
+
+
+    //批量导入需求
+    private String addAdmin;
+
+    private String topicChoice;
+
+    private String topicAnswer;
+
+    private Long createTime;
+
+    private Long lastUpdateTime;
+
 }

@@ -14,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SubjectDomain {
 
@@ -148,5 +149,19 @@ public class SubjectDomain {
 
     public List<Subject> findAllSubjectList() {
         return this.subjectDomainRepository.findAll();
+    }
+
+    public List<SubjectModel> findAllSubjectModelList() {
+        List<Subject> all = this.subjectDomainRepository.findAll();
+        return copyList(all);
+    }
+
+    public List<Subject> findSubjectListByCourseId(Long courseId) {
+        return this.subjectDomainRepository.findSubjectListByCourseId(courseId);
+    }
+
+    public List<String> allSubjectIdList() {
+        List<Subject> all = this.subjectDomainRepository.findAll();
+        return all.stream().map(subject -> subject.getId().toString()).collect(Collectors.toList());
     }
 }
