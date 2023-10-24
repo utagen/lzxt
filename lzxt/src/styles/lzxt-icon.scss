@@ -1,0 +1,87 @@
+@font-face {
+  font-family: 'lzxt';
+  src: url('../fonts/lzxt-icon.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+[class^="lzxt-icon-"], [class*=" lzxt-icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'lzxt' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.lzxt-icon-list:before {
+  content: "\e900";
+}
+.lzxt-icon-book:before {
+  content: "\e901";
+}
+.lzxt-icon-canceled:before {
+  content: "\e902";
+  color: #999;
+}
+.lzxt-icon-completed:before {
+  content: "\e903";
+}
+.lzxt-icon-computer:before {
+  content: "\e904";
+}
+.lzxt-icon-customer-service:before {
+  content: "\e905";
+}
+.lzxt-icon-go-in:before {
+  content: "\e906";
+}
+.lzxt-icon-logout:before {
+  content: "\e907";
+}
+.lzxt-icon-order:before {
+  content: "\e908";
+}
+.lzxt-icon-pen:before {
+  content: "\e909";
+}
+.lzxt-icon-pending:before {
+  content: "\e90a";
+}
+.lzxt-icon-phone:before {
+  content: "\e90b";
+}
+.lzxt-icon-purchased:before {
+  content: "\e90c";
+}
+.lzxt-icon-study-fill:before {
+  content: "\e90d";
+}
+.lzxt-icon-tips-fail:before {
+  content: "\e90e";
+}
+.lzxt-icon-tips-success:before {
+  content: "\e90f";
+}
+.lzxt-icon-user:before {
+  content: "\e910";
+}
+.lzxt-icon-users:before {
+  content: "\e911";
+}
+.lzxt-icon-wechat:before {
+  content: "\e912";
+}
+.lzxt-icon-weibo:before {
+  content: "\e913";
+}
+.lzxt-icon-wrong-notebook:before {
+  content: "\e914";
+}

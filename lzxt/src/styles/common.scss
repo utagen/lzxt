@@ -1,0 +1,140 @@
+@import './vars.scss';
+
+.breadcrumb-wrap {
+  padding: 24px 0;
+
+  &.exercise {
+    background-color: $--exercise-background-color;
+  }
+  
+}
+
+.list-wrap {
+    padding: 0px 20px 40px;
+  
+    .el-radio-group {
+      margin-bottom: 20px;
+    }
+  
+    .list-item {
+      padding: 30px 0;
+      border-bottom: 1px solid $--border-color-base;
+  
+      &:last-child {
+        border-bottom: none;
+      }
+  
+      &:hover {
+        background-color: $--color-primary-light-9;
+  
+        .cover {
+          background-color: $--color-primary-light-9;
+        }
+  
+      }
+  
+      &__content {
+        margin-left: 285px;
+        height: 185px;
+        padding: 0 20px;
+  
+        .title {
+          @include ellipsis();
+  
+          font-size: $--font-size-extra-large;
+          line-height: 30px;
+          height: 30px;
+          margin: 0;
+        }
+  
+        .summary {
+          margin: 20px 0;
+          height: 84px;
+          line-height: 28px;
+          overflow: hidden;
+  
+          img { display: none; }
+        }
+  
+        .footer {
+          height: 30px;
+          line-height: 30px;
+          color: $--color-text-secondary;
+        }
+      }
+    }
+  
+    .cover {
+      float: left;
+      width: 285px;
+      height: 185px;
+    }
+}
+
+.main {
+
+  .grid-wrap,
+  .footer-wrap,
+  .form-wrap {
+    background-color: $--color-white;
+    padding-bottom: 20px;
+  }
+
+  .form-wrap {
+    padding: 50px 100px;
+  }
+}
+
+@media screen and (max-width: 650px) {
+  .main .form-wrap {
+    padding: 25px 50px;
+  }
+}
+
+@media screen and (max-width: 550px) {
+  .main .form-wrap {
+    padding: 20px 20px;
+  }
+}
+@media screen and (max-width: 550px) {
+  .breadcrumb-wrap {
+    margin: 0 20px;
+  }
+}
+
+.el-pagination {
+  text-align: center;
+}
+
+.form-container {
+  .text-primary {
+    color: $--color-primary;
+  }
+
+  .button-group {
+    padding: 30px;
+
+    .el-button {
+      margin-left: 120px;
+      min-width: 100px;
+
+      &:first-child {
+        margin-left: 30px;
+      }
+    }
+  }
+}
+
+.confirm-dialog {
+  .el-message-box__title {
+    display: block;
+    text-align: left;
+  }
+  .el-message-box__content {
+    padding: 30px 10px;
+  }
+  .el-message-box__btns .el-button{
+    margin-left: 60px;
+    &:first-child { margin-left: 0;}
+  }
+}

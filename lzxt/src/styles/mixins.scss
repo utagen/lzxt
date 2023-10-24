@@ -1,0 +1,12 @@
+@import "./vars.scss";
+
+@mixin container ($width: $--container-max-width ) {
+    max-width: $width;
+    margin: 0 auto;
+}
+
+@mixin ellipsis () {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
