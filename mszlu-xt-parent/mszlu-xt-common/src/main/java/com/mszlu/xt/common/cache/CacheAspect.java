@@ -1,6 +1,7 @@
 package com.mszlu.xt.common.cache;
 
 import com.alibaba.fastjson.JSON;
+import com.mszlu.xt.common.login.UserThreadLocal;
 import com.mszlu.xt.common.model.CallResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -73,6 +74,12 @@ public class CacheAspect {
             String name = annotation.name();
             //先从redis获取
             String redisKey = name + "::" + className + "::" + methodName + "::" + params;
+            if (annotation.hasUser()) {
+                Long userId = UserThreadLocal.get();
+                if (userId != null){
+                    redisKey = redisKey + "::" + userId;
+                }
+            }
             String cacheValue = redisTemplate.opsForValue().get(redisKey);
             if (StringUtils.isNotEmpty(cacheValue)) {
                 log.info("---{}-{}走了缓存---,", className, methodName);

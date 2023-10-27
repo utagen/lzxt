@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.mszlu.xt</groupId>
-        <artifactId>mszlu-xt-web</artifactId>
+        <artifactId>mszlu-xt-sso</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>mszlu-xt-web-api</artifactId>
+    <artifactId>mszlu-xt-sso-dubbo-service</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -20,16 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.mszlu.xt</groupId>
-            <artifactId>mszlu-xt-web-service-impl</artifactId>
+            <artifactId>spring-boot-starter</artifactId>
         </dependency>
         <!-- Dubbo Spring Boot Starter -->
         <dependency>
@@ -44,7 +35,10 @@
         <dependency>
             <groupId>com.mszlu.xt</groupId>
             <artifactId>mszlu-xt-sso-service</artifactId>
-            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mszlu.xt</groupId>
+            <artifactId>mszlu-xt-sso-domain</artifactId>
         </dependency>
     </dependencies>
 

@@ -17,4 +17,10 @@ public @interface Cache {
      * @return
      */
     int time() default 60;
+
+    /**
+     * 是否需要当前的用户作为key的一部分
+     * @return
+     */
+    boolean hasUser() default false;
 }
