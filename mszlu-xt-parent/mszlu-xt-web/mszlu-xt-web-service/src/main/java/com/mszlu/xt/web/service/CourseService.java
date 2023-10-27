@@ -10,4 +10,6 @@ public interface CourseService {
      * @return
      */
     CallResult courseList(CourseParam courseParam);
+
+    CallResult subjectInfo(CourseParam courseParam);
 }

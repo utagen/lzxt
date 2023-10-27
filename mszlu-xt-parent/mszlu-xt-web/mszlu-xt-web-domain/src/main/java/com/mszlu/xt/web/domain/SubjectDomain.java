@@ -7,11 +7,14 @@ import com.mszlu.xt.common.model.BusinessCodeEnum;
 import com.mszlu.xt.common.model.CallResult;
 import com.mszlu.xt.common.model.ListPageModel;
 import com.mszlu.xt.common.utils.CommonUtils;
+import com.mszlu.xt.pojo.News;
 import com.mszlu.xt.pojo.Subject;
 import com.mszlu.xt.web.domain.repository.SubjectDomainRepository;
+import com.mszlu.xt.web.model.NewsModel;
 import com.mszlu.xt.web.model.SubjectModel;
 import com.mszlu.xt.web.model.params.SubjectParam;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 
 import java.util.*;
@@ -35,6 +38,17 @@ public class SubjectDomain {
             subjectModels.add(target);
         }
         return subjectModels;
+    }
+
+    public SubjectModel copy(Subject subject){
+        if (subject == null){
+            return null;
+        }
+        SubjectModel subjectModel = new SubjectModel();
+        //属性copy
+        BeanUtils.copyProperties(subject, subjectModel);
+
+        return subjectModel;
     }
 
     public CallResult<Object> listSubject() {
@@ -75,5 +89,14 @@ public class SubjectDomain {
     public List<SubjectModel> findSubjectListByCourseId(Long courseId) {
         List<Subject> subjectList = subjectDomainRepository.findSubjectListByCourseId(courseId);
         return copyList(subjectList);
+    }
+
+    public List<Integer> findSubjectUnit(Long subjectId) {
+        return subjectDomainRepository.findSubjectUnit(subjectId);
+    }
+
+    public SubjectModel findSubject(Long subjectId) {
+        Subject subject = subjectDomainRepository.findById(subjectId);
+        return copy(subject);
     }
 }

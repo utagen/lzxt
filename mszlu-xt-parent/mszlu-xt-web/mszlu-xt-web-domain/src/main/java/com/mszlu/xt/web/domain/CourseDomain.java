@@ -1,14 +1,21 @@
 package com.mszlu.xt.web.domain;
 
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mszlu.xt.common.login.UserThreadLocal;
+import com.mszlu.xt.common.model.BusinessCodeEnum;
 import com.mszlu.xt.common.model.CallResult;
 import com.mszlu.xt.common.model.ListPageModel;
 import com.mszlu.xt.pojo.Course;
+import com.mszlu.xt.pojo.SubjectUnit;
 import com.mszlu.xt.pojo.UserCourse;
+import com.mszlu.xt.pojo.UserHistory;
 import com.mszlu.xt.web.domain.repository.CourseDomainRepository;
 import com.mszlu.xt.web.model.CourseViewModel;
 import com.mszlu.xt.web.model.SubjectModel;
+import com.mszlu.xt.web.model.SubjectViewModel;
+import com.mszlu.xt.web.model.enums.HistoryStatus;
 import com.mszlu.xt.web.model.params.CourseParam;
 import com.mszlu.xt.web.model.params.SubjectParam;
 import com.mszlu.xt.web.model.params.UserCourseParam;
@@ -18,6 +25,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CourseDomain {
     private CourseDomainRepository courseDomainRepository;
@@ -98,5 +106,56 @@ public class CourseDomain {
         String term = termBuilder.toString();
         subjectModel.setSubjectTerm(term.substring(0, term.lastIndexOf(",")));
         return subjectModel;
+    }
+
+    public CallResult<Object> subjectInfo() {
+        /*
+         * 1. 根据课程id查询课程所对应的科目列表
+         * 2. 根据科目查询对应的单元
+         * 3. 如果之前有学习记录，自动选择所选科目和单元
+         * 4. 科目需要显示 名称-年级-学期
+         */
+        Long userId = UserThreadLocal.get();
+        Long courseId = this.courseParam.getCourseId();
+        List<SubjectModel> subjectList = this.courseDomainRepository.createSubjectDomain(null).findSubjectListByCourseId(courseId);
+
+        List<SubjectViewModel> subjectModelList = new ArrayList<>();
+        for (SubjectModel subject : subjectList){
+            List<Integer> subjectUnitList = this.courseDomainRepository.createSubjectDomain(null).findSubjectUnit(subject.getId());
+            SubjectViewModel subjectViewModel = new SubjectViewModel();
+            subjectViewModel.setId(subject.getId());
+            subjectViewModel.setSubjectName(subject.getSubjectName()+" "+subject.getSubjectGrade()+" "+subject.getSubjectTerm());
+            subjectViewModel.setSubjectGrade(subject.getSubjectGrade());
+            subjectViewModel.setSubjectTerm(subject.getSubjectTerm());
+            subjectViewModel.setSubjectUnitList(subjectUnitList);
+
+            if (userId != null){
+                UserHistory userHistory = this.courseDomainRepository.createUserHisToryDomain(null).findUserHistory(userId, subject.getId(), HistoryStatus.NO_FINISH.getCode());
+                if (userHistory != null) {
+                    String subjectUnits = userHistory.getSubjectUnits();
+                    if (StringUtils.isNotEmpty(subjectUnits)) {
+                        List<Integer> strings = JSON.parseArray(subjectUnits, Integer.class);
+                        subjectViewModel.setSubjectUnitSelectedList(strings);
+                    }
+                }
+            }
+
+            subjectModelList.add(subjectViewModel);
+        }
+        return CallResult.success(subjectModelList);
+    }
+
+
+    public CallResult<Object> checkSubjectInfoParam() {
+        Long courseId = this.courseParam.getCourseId();
+        Course course = this.courseDomainRepository.findCourseById(courseId);
+        if (course == null){
+            return CallResult.fail(BusinessCodeEnum.TOPIC_PARAM_ERROR.getCode(),"参数错误");
+        }
+        return CallResult.success();
+    }
+
+    public List<Long> findCourseIdBySubject(Long subjectId) {
+        return this.courseDomainRepository.findCourseIdBySubject(subjectId);
     }
 }
