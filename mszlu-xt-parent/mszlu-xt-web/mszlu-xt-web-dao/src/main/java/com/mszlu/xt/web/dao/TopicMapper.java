@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 public interface TopicMapper extends BaseMapper<Topic> {
 
-    TopicDTO findTopicAnswer(@Param("topicId")Long topicId,
-                             @Param("userHistoryId") Long userHistoryId);
+    TopicDTO findTopicAnswer(@Param("topicId") Long topicId,
+                             @Param("userId") Long userId,
+                             @Param("userHistoryId")Long userHistoryId);
 }

@@ -11,5 +11,19 @@ public interface CourseService {
      */
     CallResult courseList(CourseParam courseParam);
 
+    /**
+     * 根据课程id查询学科详细信息
+     * @param courseParam
+     * @return
+     */
     CallResult subjectInfo(CourseParam courseParam);
+
+    /**
+     * 查询课程详情
+     * @param courseParam
+     * @return
+     */
+    CallResult courseDetail(CourseParam courseParam);
+
+    CallResult myCoupon(CourseParam courseParam);
 }

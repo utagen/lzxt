@@ -8,10 +8,14 @@ import com.mszlu.xt.model.enums.LoginType;
 import com.mszlu.xt.model.params.LoginParam;
 import com.mszlu.xt.model.params.UserParam;
 import com.mszlu.xt.sso.dao.data.User;
+import com.mszlu.xt.sso.dao.mongo.data.UserLog;
 import com.mszlu.xt.sso.domain.repository.LoginDomainRepository;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import me.chanjar.weixin.mp.bean.result.WxMpOAuth2AccessToken;
 import me.chanjar.weixin.mp.bean.result.WxMpUser;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -20,10 +24,15 @@ import java.util.concurrent.TimeUnit;
 /**
  * 专门处理和登录相关的操作
  */
+@Slf4j
 public class LoginDomain {
+
     private LoginDomainRepository loginDomainRepository;
 
     private LoginParam loginParam;
+
+    private User user;
+    private boolean isNewer;
 
     public static final String secretKey = "mszlu!@#$%xtsso&^#$#@@";
 
@@ -100,9 +109,9 @@ public class LoginDomain {
 
             //5. 使用jwt技术，生成token，需要把token存储起来
             String token = JwtUtil.createJWT(7 * 24 * 60 * 60 * 1000, user.getId(), secretKey);
-            System.out.println("存入之前的token是:" + RedisKey.TOKEN + token);
+//            System.out.println("存入之前的token是:" + RedisKey.TOKEN + token);
             loginDomainRepository.redisTemplate.opsForValue().set(RedisKey.TOKEN + token, String.valueOf(user.getId()), 7, TimeUnit.DAYS);
-            System.out.println("生成的token是:" + token);
+//            System.out.println("生成的token是:" + token);
             //6. 因为是付费课程，所以账号只能在一端登录，如果用户在其他地方登录，需要将当前登录的用户踢下线
             String oldToken = loginDomainRepository.redisTemplate.opsForValue().get(RedisKey.LOGIN_USER_TOKEN + user.getId());
             if (oldToken != null) {
@@ -123,6 +132,8 @@ public class LoginDomain {
                 user.setLastLoginTime(System.currentTimeMillis());
                 this.loginDomainRepository.createUserDomain(new UserParam()).updateUser(user);
             }
+            this.isNewer = isNew;
+            this.user = user;
             return CallResult.success();
         } catch (Exception e) {
             e.printStackTrace();
@@ -186,9 +197,9 @@ public class LoginDomain {
 
             //5. 使用jwt技术，生成token，需要把token存储起来
             String token = JwtUtil.createJWT(7 * 24 * 60 * 60 * 1000, user.getId(), secretKey);
-            System.out.println("存入之前的token是:" + RedisKey.TOKEN + token);
+//            System.out.println("存入之前的token是:" + RedisKey.TOKEN + token);
             loginDomainRepository.redisTemplate.opsForValue().set(RedisKey.TOKEN + token, String.valueOf(user.getId()), 7, TimeUnit.DAYS);
-            System.out.println("生成的token是:" + token);
+//            System.out.println("生成的token是:" + token);
             //6. 因为是付费课程，所以账号只能在一端登录，如果用户在其他地方登录，需要将当前登录的用户踢下线
             String oldToken = loginDomainRepository.redisTemplate.opsForValue().get(RedisKey.LOGIN_USER_TOKEN + user.getId());
             if (oldToken != null) {
@@ -214,5 +225,17 @@ public class LoginDomain {
             e.printStackTrace();
             return CallResult.fail(BusinessCodeEnum.LOGIN_WX_NOT_USER_INFO.getCode(),"授权问题,无法获取用户信息");
         }
+    }
+
+
+    public void wxLoginCallBackFinishUp(CallResult<Object> callResult) {
+        UserLog userLog = new UserLog();
+        userLog.setUserId(user.getId());
+        userLog.setNewer(isNewer);
+        userLog.setSex(user.getSex());
+        userLog.setLastLoginTime(user.getLastLoginTime());
+        userLog.setRegisterTime(user.getRegisterTime());
+        //同步操作 一旦这个代码出现异常，就影响了登录功能（rocketmq挂掉的风险）
+        this.loginDomainRepository.recordLoginLog(userLog);
     }
 }

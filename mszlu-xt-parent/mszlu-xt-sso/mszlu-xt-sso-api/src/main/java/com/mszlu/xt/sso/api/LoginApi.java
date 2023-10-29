@@ -45,9 +45,9 @@ public class LoginApi {
         loginParam.setResponse(response);
         CallResult callResult = loginService.wxLoginCallBack(loginParam);
         if (callResult.isSuccess()) {
-            return "redirect:http://www.lzxtedu.com/course";
+            return "redirect:http://www.mszlu.com/course";
         } else {
-            return "redirect:http://www.lzxtedu.com";
+            return "redirect:http://www.mszlu.com";
         }
     }
 

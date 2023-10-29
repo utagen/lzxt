@@ -24,9 +24,9 @@ public class WxOpenConfig {
     public String scope;
     @Value("${wx.open.config.mobile.redirectUrl}")
     public String mobileRedirectUrl;
-    @Value("{wx.pay.appId}")
+    @Value("${wx.pay.appId}")
     public String appid;
-    @Value("{wx.open.config.pay.secret}")
+    @Value("${wx.open.config.pay.secret}")
     public String secret;
 
     @Bean

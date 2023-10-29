@@ -9,6 +9,7 @@ import com.mszlu.xt.common.model.ListPageModel;
 import com.mszlu.xt.common.utils.CommonUtils;
 import com.mszlu.xt.pojo.News;
 import com.mszlu.xt.pojo.Subject;
+import com.mszlu.xt.pojo.SubjectUnit;
 import com.mszlu.xt.web.domain.repository.SubjectDomainRepository;
 import com.mszlu.xt.web.model.NewsModel;
 import com.mszlu.xt.web.model.SubjectModel;
@@ -40,17 +41,6 @@ public class SubjectDomain {
         return subjectModels;
     }
 
-    public SubjectModel copy(Subject subject){
-        if (subject == null){
-            return null;
-        }
-        SubjectModel subjectModel = new SubjectModel();
-        //属性copy
-        BeanUtils.copyProperties(subject, subjectModel);
-
-        return subjectModel;
-    }
-
     public CallResult<Object> listSubject() {
         /**
          * 1. 先查询所有的科目信息
@@ -68,15 +58,15 @@ public class SubjectDomain {
         }
         Set<String> sortSet = new TreeSet<>((o1, o2) -> {
             /**
-             * 1. 要将年级名称 取第一个字 七八九
-             * 2. 转换为 7 8 9
+             * 1. 要将年级名称 取第一个字 七 八 九
+             * 2. 转换为 7,8,9
              * 3. 进行数字排序
              */
             String numberStr1 = CommonUtils.getNumberStr(o1);
             String numberStr2 = CommonUtils.getNumberStr(o2);
-            long num1 = CommonUtils.chineseNumber2Int(numberStr1);
-            long num2 = CommonUtils.chineseNumber2Int(numberStr2);
-            return (int) (num1 - num2);
+            long number1 = CommonUtils.chineseNumber2Int(numberStr1);
+            long number2 = CommonUtils.chineseNumber2Int(numberStr2);
+            return (int) (number1 - number2);
         });
         sortSet.addAll(subjectGradeList);
         Map<String, Set<String>> map = new HashMap<>();
@@ -91,12 +81,28 @@ public class SubjectDomain {
         return copyList(subjectList);
     }
 
-    public List<Integer> findSubjectUnit(Long subjectId) {
-        return subjectDomainRepository.findSubjectUnit(subjectId);
+    public List<Integer> findSubjectUnitBySubjectId(Long subjectId) {
+        List<SubjectUnit> subjectUnitList = this.subjectDomainRepository.findUnitBySubjectId(subjectId);
+        return subjectUnitList.stream().map(SubjectUnit::getSubjectUnit).collect(Collectors.toList());
     }
 
     public SubjectModel findSubject(Long subjectId) {
-        Subject subject = subjectDomainRepository.findById(subjectId);
-        return copy(subject);
+        Subject subject = this.subjectDomainRepository.findSubjectById(subjectId);
+        SubjectModel target = new SubjectModel();
+        BeanUtils.copyProperties(subject, target);
+        return target;
+    }
+
+    public Long findSubjectByInfo(String subjectName, String subjectGrade, String subjectTerm) {
+        if ("全部".equals(subjectName)){
+            subjectName = null;
+        }
+        if ("全部".equals(subjectGrade)){
+            subjectGrade = null;
+        }
+        if ("全部".equals(subjectTerm)){
+            subjectTerm = null;
+        }
+        return this.subjectDomainRepository.findSubjectByInfo(subjectName,subjectGrade,subjectTerm);
     }
 }

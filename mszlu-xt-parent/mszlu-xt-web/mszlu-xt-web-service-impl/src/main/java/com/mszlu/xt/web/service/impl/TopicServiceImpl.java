@@ -60,4 +60,14 @@ public class TopicServiceImpl extends AbstractService implements TopicService {
             }
         });
     }
+
+    @Override
+    public CallResult practiceHistory(TopicParam topicParam) {
+        return null;
+    }
+
+    @Override
+    public CallResult userProblemSearch(TopicParam topicParam) {
+        return null;
+    }
 }

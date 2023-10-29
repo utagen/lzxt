@@ -1,6 +1,7 @@
 package com.mszlu.xt.web.domain.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import com.mszlu.xt.common.enums.Status;
@@ -23,11 +24,8 @@ public class SubjectDomainRepository {
     @Resource
     private SubjectMapper subjectMapper;
 
-    @Resource
-    private SubjectUnitMapper subjectUnitMapper;
-
     public SubjectDomain createDomain(SubjectParam subjectParam) {
-        return new SubjectDomain(this, subjectParam);
+        return new SubjectDomain(this,subjectParam);
     }
 
     public List<Subject> findSubjectList() {
@@ -40,14 +38,38 @@ public class SubjectDomainRepository {
         return subjectMapper.findSubjectListByCourseId(courseId);
     }
 
-    public List<Integer> findSubjectUnit(Long subjectId) {
-        LambdaQueryWrapper<SubjectUnit> queryWrapper = new LambdaQueryWrapper<>();
+    @Resource
+    private SubjectUnitMapper subjectUnitMapper;
+
+    public List<SubjectUnit> findUnitBySubjectId(Long subjectId) {
+        LambdaQueryWrapper<SubjectUnit> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.eq(SubjectUnit::getSubjectId,subjectId);
-        List<SubjectUnit> subjectUnits = subjectUnitMapper.selectList(queryWrapper);
-        return subjectUnits.stream().map(SubjectUnit::getSubjectUnit).collect(Collectors.toList());
+        return subjectUnitMapper.selectList(queryWrapper);
     }
 
-    public Subject findById(Long subjectId) {
+    public Subject findSubjectById(Long subjectId) {
         return subjectMapper.selectById(subjectId);
+    }
+
+    public Long findSubjectByInfo(String subjectName, String subjectGrade, String subjectTerm) {
+        LambdaQueryWrapper<Subject> queryWrapper = Wrappers.lambdaQuery();
+        boolean isNull = true;
+        if (StringUtils.isNotBlank(subjectName)){
+            queryWrapper.eq(Subject::getSubjectName,subjectName);
+            isNull = false;
+        }
+        if (StringUtils.isNotBlank(subjectGrade)){
+            queryWrapper.eq(Subject::getSubjectGrade,subjectGrade);
+            isNull = false;
+        }
+        if (StringUtils.isNotBlank(subjectTerm)){
+            queryWrapper.eq(Subject::getSubjectTerm,subjectTerm);
+            isNull = false;
+        }
+        if (isNull){
+            return null;
+        }
+        Subject subject = subjectMapper.selectOne(queryWrapper);
+        return subject == null ? null : subject.getId();
     }
 }

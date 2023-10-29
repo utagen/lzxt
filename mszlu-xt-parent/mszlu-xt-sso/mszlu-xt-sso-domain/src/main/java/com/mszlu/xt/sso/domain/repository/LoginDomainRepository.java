@@ -8,10 +8,15 @@ import com.mszlu.xt.model.params.LoginParam;
 import com.mszlu.xt.model.params.UserParam;
 import com.mszlu.xt.sso.dao.UserMapper;
 import com.mszlu.xt.sso.dao.data.User;
+import com.mszlu.xt.sso.dao.mongo.data.UserLog;
 import com.mszlu.xt.sso.domain.LoginDomain;
 import com.mszlu.xt.sso.domain.UserDomain;
+import com.mszlu.xt.sso.domain.thread.LogThread;
+import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.api.WxConsts;
 import me.chanjar.weixin.mp.api.WxMpService;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -21,10 +26,13 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@Slf4j
 public class LoginDomainRepository {
 
     @Autowired
     public StringRedisTemplate redisTemplate;
+    @Autowired
+    private LogThread logThread;
     @Autowired
     public WxMpService wxMpService;
     @Autowired
@@ -65,4 +73,11 @@ public class LoginDomainRepository {
     }
 
 
+    public void recordLoginLog(UserLog userLog) {
+        //同步发送，同时发送的消息会自动转为JSON字符串
+        //为了避免同步发送出现的问题，改为异步发送，但是可能会丢数据
+        //不希望丢数据
+//        log.info("记录日志开始时间:{}", new DateTime().toString("yyyy-MM-dd HH:mm:ss"));
+        logThread.recordLog("xt_log_sso_login", userLog);
+    }
 }

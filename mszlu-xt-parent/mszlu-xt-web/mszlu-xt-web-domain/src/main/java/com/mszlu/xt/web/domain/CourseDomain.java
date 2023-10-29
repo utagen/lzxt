@@ -1,31 +1,26 @@
 package com.mszlu.xt.web.domain;
 
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mszlu.xt.common.login.UserThreadLocal;
 import com.mszlu.xt.common.model.BusinessCodeEnum;
 import com.mszlu.xt.common.model.CallResult;
 import com.mszlu.xt.common.model.ListPageModel;
-import com.mszlu.xt.pojo.Course;
-import com.mszlu.xt.pojo.SubjectUnit;
-import com.mszlu.xt.pojo.UserCourse;
-import com.mszlu.xt.pojo.UserHistory;
+import com.mszlu.xt.pojo.*;
 import com.mszlu.xt.web.domain.repository.CourseDomainRepository;
-import com.mszlu.xt.web.model.CourseViewModel;
-import com.mszlu.xt.web.model.SubjectModel;
-import com.mszlu.xt.web.model.SubjectViewModel;
+import com.mszlu.xt.web.model.*;
 import com.mszlu.xt.web.model.enums.HistoryStatus;
 import com.mszlu.xt.web.model.params.CourseParam;
 import com.mszlu.xt.web.model.params.SubjectParam;
+import com.mszlu.xt.web.model.params.CouponParam;
 import com.mszlu.xt.web.model.params.UserCourseParam;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class CourseDomain {
     private CourseDomainRepository courseDomainRepository;
@@ -41,33 +36,33 @@ public class CourseDomain {
          * 1. 如果根据年级进行查询，需要先找到年级对应的科目列表，根据科目列表去查询课程列表
          * 2. 如果年级为空，查询全部的课程即可
          * 3. 用户购买课程的信息，课程中科目的名称信息
-         * 4. 判断用户是否登录，如果登录，去user_course表中查询相关信息
+         * 4. 判断用户是否登录，如果登录 去user_course 表 去查询相关信息
          * 5. 根据课程id，去查询对应的科目名称
          */
         int page = this.courseParam.getPage();
         int pageSize = this.courseParam.getPageSize();
         String subjectGrade = this.courseParam.getSubjectGrade();
         Page<Course> coursePage;
-        if (StringUtils.isNotBlank(subjectGrade)) {
-            coursePage = this.courseDomainRepository.findCourseByGrade(page, pageSize, subjectGrade);
-        } else {
-            coursePage = this.courseDomainRepository.findAllCourse(page, pageSize);
+        if (StringUtils.isNotBlank(subjectGrade)){
+            coursePage = this.courseDomainRepository.findCourseByGrade(page,pageSize,subjectGrade);
+        }else{
+            coursePage = this.courseDomainRepository.findAllCourse(page,pageSize);
         }
         List<Course> courseList = coursePage.getRecords();
         List<CourseViewModel> courseViewModels = new ArrayList<>();
         for (Course course : courseList) {
             CourseViewModel courseViewModel = new CourseViewModel();
-            BeanUtils.copyProperties(course, courseViewModel);
+            BeanUtils.copyProperties(course,courseViewModel);
             //购买的数量
             long studyCount = this.courseDomainRepository.createUserCourseDomain(new UserCourseParam()).countUserCourseByCourseId(course.getId());
             courseViewModel.setStudyCount((int) studyCount);
             Long userId = UserThreadLocal.get();
-            if (userId != null) {
+            if (userId != null){
                 //代表用户已登录
-                UserCourse userCourse = this.courseDomainRepository.createUserCourseDomain(new UserCourseParam()).findUserCourse(userId, course.getId(), System.currentTimeMillis());
-                if (userCourse == null) {
+                UserCourse userCourse = this.courseDomainRepository.createUserCourseDomain(new UserCourseParam()).findUserCourse(userId,course.getId(),System.currentTimeMillis());
+                if (userCourse == null){
                     courseViewModel.setBuy(0);
-                } else {
+                }else {
                     courseViewModel.setBuy(1);
                     courseViewModel.setExpireTime(new DateTime(userCourse.getExpireTime()).toString("yyyy-MM-dd"));
                 }
@@ -101,36 +96,39 @@ public class CourseDomain {
             }
         }
         String name = nameBuilder.toString();
-        subjectModel.setSubjectName(name.substring(0, name.lastIndexOf(",")));
+        subjectModel.setSubjectName(name.substring(0,name.lastIndexOf(",")));
         subjectModel.setSubjectGrade(subjectModelList.get(0).getSubjectGrade());
         String term = termBuilder.toString();
-        subjectModel.setSubjectTerm(term.substring(0, term.lastIndexOf(",")));
+        subjectModel.setSubjectTerm(term.substring(0,term.lastIndexOf(",")));
         return subjectModel;
     }
 
     public CallResult<Object> subjectInfo() {
-        /*
-         * 1. 根据课程id查询课程所对应的科目列表
-         * 2. 根据科目查询对应的单元
-         * 3. 如果之前有学习记录，自动选择所选科目和单元
-         * 4. 科目需要显示 名称-年级-学期
-         */
         Long userId = UserThreadLocal.get();
-        Long courseId = this.courseParam.getCourseId();
-        List<SubjectModel> subjectList = this.courseDomainRepository.createSubjectDomain(null).findSubjectListByCourseId(courseId);
+        /**
+         * 1. 根据课程id 查询 学科列表
+         * 2. 根据学科 查询对应的单元
+         * 3. 返回对应的模型数据即可
+         * 4. 不做的业务逻辑（如果此课程的学科已经在学习中，返回已经当初选择的单元）
+         */
+        Long courseId = courseParam.getCourseId();
+        List<SubjectModel> subjectModelList = this.courseDomainRepository.createSubjectDomain(null).findSubjectListByCourseId(courseId);
 
-        List<SubjectViewModel> subjectModelList = new ArrayList<>();
-        for (SubjectModel subject : subjectList){
-            List<Integer> subjectUnitList = this.courseDomainRepository.createSubjectDomain(null).findSubjectUnit(subject.getId());
+        List<SubjectViewModel> subjectViewModelList = new ArrayList<>();
+        for (SubjectModel subjectModel : subjectModelList) {
+
             SubjectViewModel subjectViewModel = new SubjectViewModel();
-            subjectViewModel.setId(subject.getId());
-            subjectViewModel.setSubjectName(subject.getSubjectName()+" "+subject.getSubjectGrade()+" "+subject.getSubjectTerm());
-            subjectViewModel.setSubjectGrade(subject.getSubjectGrade());
-            subjectViewModel.setSubjectTerm(subject.getSubjectTerm());
-            subjectViewModel.setSubjectUnitList(subjectUnitList);
+            subjectViewModel.setId(subjectModel.getId());
+            subjectViewModel.setSubjectGrade(subjectModel.getSubjectGrade());
+            subjectViewModel.setSubjectTerm(subjectModel.getSubjectTerm());
+            subjectViewModel.setSubjectName(subjectModel.getSubjectName());
+            subjectViewModel.fillSubjectName();
+            List<Integer> subjectUnitLis
+                    = this.courseDomainRepository.createSubjectDomain(null).findSubjectUnitBySubjectId(subjectModel.getId());
+            subjectViewModel.setSubjectUnitList(subjectUnitLis);
 
             if (userId != null){
-                UserHistory userHistory = this.courseDomainRepository.createUserHisToryDomain(null).findUserHistory(userId, subject.getId(), HistoryStatus.NO_FINISH.getCode());
+                UserHistory userHistory = this.courseDomainRepository.createUserHistoryDomain(null).findUserHistory(userId, subjectModel.getId(), HistoryStatus.NO_FINISH.getCode());
                 if (userHistory != null) {
                     String subjectUnits = userHistory.getSubjectUnits();
                     if (StringUtils.isNotEmpty(subjectUnits)) {
@@ -140,14 +138,13 @@ public class CourseDomain {
                 }
             }
 
-            subjectModelList.add(subjectViewModel);
+            subjectViewModelList.add(subjectViewModel);
         }
-        return CallResult.success(subjectModelList);
+        return CallResult.success(subjectViewModelList);
     }
 
-
     public CallResult<Object> checkSubjectInfoParam() {
-        Long courseId = this.courseParam.getCourseId();
+        Long courseId = courseParam.getCourseId();
         Course course = this.courseDomainRepository.findCourseById(courseId);
         if (course == null){
             return CallResult.fail(BusinessCodeEnum.TOPIC_PARAM_ERROR.getCode(),"参数错误");
@@ -155,7 +152,120 @@ public class CourseDomain {
         return CallResult.success();
     }
 
-    public List<Long> findCourseIdBySubject(Long subjectId) {
-        return this.courseDomainRepository.findCourseIdBySubject(subjectId);
+    public List<Long> findCourseIdListBySubjectId(Long subjectId) {
+        return courseDomainRepository.findCourseIdListBySubjectId(subjectId);
     }
+
+    public Course findCourseById(Long courseId) {
+        return this.courseDomainRepository.findCourseById(courseId);
+    }
+
+    public CourseViewModel findCourseViewModel(Long courseId) {
+        Course course = this.courseDomainRepository.findCourseById(courseId);
+        return copyViewModel(course);
+    }
+    public CourseViewModel copyViewModel(Course course){
+        CourseViewModel courseViewModel = new CourseViewModel();
+        courseViewModel.setId(course.getId());
+        courseViewModel.setCourseDesc(course.getCourseDesc());
+        courseViewModel.setCourseName(course.getCourseName());
+        courseViewModel.setCoursePrice(course.getCoursePrice());
+        courseViewModel.setCourseZhePrice(course.getCourseZhePrice());
+        courseViewModel.setOrderTime(course.getOrderTime());
+        courseViewModel.setImageUrl(course.getImageUrl());
+        List<SubjectModel> subjectModelList = courseDomainRepository.createSubjectDomain(null).findSubjectListByCourseId(course.getId());
+        courseViewModel.setSubjectList(subjectModelList);
+        return courseViewModel;
+    }
+
+    public CallResult<Object> courseDetail() {
+        Long courseId = this.courseParam.getCourseId();
+        Course course = this.courseDomainRepository.findCourseById(courseId);
+        if (course == null) {
+            return CallResult.fail(BusinessCodeEnum.CHECK_PARAM_NO_RESULT.getCode(), "课程不存在");
+        }
+        CourseDetailModel courseDetailModel = new CourseDetailModel();
+        courseDetailModel.setCourseId(courseId);
+        courseDetailModel.setCourseName(course.getCourseName());
+        courseDetailModel.setCourseTime(course.getOrderTime());
+        courseDetailModel.setPrice(course.getCourseZhePrice());
+        //根据课程id查询课程关联的科目详情
+        List<SubjectModel> subjectList = this.courseDomainRepository.createSubjectDomain(null).findSubjectListByCourseId(courseId);
+        StringBuilder subjectStr = new StringBuilder();
+        for (SubjectModel subject : subjectList) {
+            subjectStr.append(subject.getSubjectName())
+                        .append(" ")
+                        .append(subject.getSubjectGrade())
+                        .append(" ")
+                        .append(subject.getSubjectTerm())
+                        .append(",");
+        }
+        int length = subjectStr.toString().length();
+        if (length > 0) {
+            subjectStr = new StringBuilder(subjectStr.substring(0, length - 1));
+        }
+        courseDetailModel.setSubjectInfo(subjectStr.toString());
+
+        return CallResult.success(courseDetailModel);
+    }
+
+    public CallResult<Object> myCoupon() {
+        /*
+         * 1.根据课程和当前的登录用户id查询用户所有可用的优惠券
+         * 2.判断优惠券是否可用 开始时间 != -1 过期时间 != -1
+         */
+        Long userId = UserThreadLocal.get();
+        Long courseId = this.courseParam.getCourseId();
+        Course course = this.courseDomainRepository.findCourseById(courseId);
+        if (course == null) {
+            return CallResult.fail(BusinessCodeEnum.CHECK_PARAM_NO_RESULT.getCode(), "课程不存在");
+        }
+        List<UserCoupon> userCouponList = this.courseDomainRepository.createCouponDomain(new CouponParam()).findUserCouponByUserId(userId);
+        List<UserCouponModel> userCouponModelList = new ArrayList<>();
+        for (UserCoupon userCoupon : userCouponList) {
+            Long startTime = userCoupon.getStartTime();
+            Long expireTime = userCoupon.getExpireTime();
+            long currentTimeMillis = System.currentTimeMillis();
+            if (startTime != -1 && startTime > currentTimeMillis) {
+                //时间没到，不能用
+                continue;
+            }
+            if (expireTime != -1 && expireTime < currentTimeMillis) {
+                //已过期，不能用
+                continue;
+            }
+            //判断满减
+            Long couponId = userCoupon.getCouponId();
+            Coupon coupon = this.courseDomainRepository.createCouponDomain(null).findCouponById(couponId);
+            if (coupon == null) {
+                continue;
+            }
+            Integer status = coupon.getStatus();
+            if (status == 2) {
+                continue;
+            }
+            Integer disStatus = coupon.getDisStatus();
+            if (disStatus == 1) {
+                //需要满足满减条件
+                BigDecimal max = coupon.getMax();
+                BigDecimal courseZhePrice = course.getCourseZhePrice();
+                if (max.compareTo(courseZhePrice) > 0) {
+                    continue;
+                }
+            }
+            UserCouponModel userCouponModel = new UserCouponModel();
+            userCouponModel.setCouponId(couponId);
+            userCouponModel.setAmount(coupon.getPrice());
+            userCouponModel.setName(coupon.getName());
+            userCouponModelList.add(userCouponModel);
+        }
+
+        return CallResult.success(userCouponModelList);
+    }
+
+
+//    public static void main(String[] args) {
+//        System.out.println(new DateTime(1633511129910L).toString("yyyy-MM-dd"));
+//        System.out.println(System.currentTimeMillis() + 300 * 24 * 60 * 60 * 1000);
+//    }
 }

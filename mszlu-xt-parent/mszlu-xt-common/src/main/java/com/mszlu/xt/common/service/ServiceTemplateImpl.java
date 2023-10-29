@@ -54,6 +54,10 @@ public class ServiceTemplateImpl implements ServiceTemplate {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             e.printStackTrace();
             log.error("excute error", e);
+            //是不是每次都需要查看 error.log才能发现 代码的问题?
+            // 主动发现错误日志，肯定是在这触发的？
+            // 需求：一旦出现error，发短信或者发邮件通知对应的开发人员
+            // 要求：注意效率，发邮件或者发短信一般都比较慢，error日志在生产环境还是很频繁的，影响程序的性能
             return CallResult.fail();
         }
     }

@@ -22,20 +22,11 @@ public class UserCourseDomain {
         return userCourseDomainRepository.countUserCourseByCourseId(courseId);
     }
 
-    public Integer countUserCourse(Long courseId) {
-        return userCourseDomainRepository.countUserCourse(courseId);
+    public Integer countUserCourseInCourseIdList(Long userId, List<Long> courseIdList, long currentTimeMillis) {
+        return userCourseDomainRepository.countUserCourseInCourseIdList(userId,courseIdList,currentTimeMillis);
     }
 
-    public UserCourse findUserCourseByUserIdAndCourseId() {
-        Long courseId = userCourseParam.getCourseId();
-        Long userId = userCourseParam.getUserId();
-        Long time = userCourseParam.getTime();
-        return userCourseDomainRepository.findUserCourseByUserIdAndCourseId(courseId,userId,time);
-    }
-
-    public Integer countUserCourseByUserId(Long userId,
-                                           List<Long> courseIdList,
-                                           long currentTime) {
-        return userCourseDomainRepository.countUserCourseByUserId(userId,courseIdList,currentTime);
+    public List<UserCourse> findUserCourseList(Long userId) {
+        return userCourseDomainRepository.findUserCourseList(userId);
     }
 }

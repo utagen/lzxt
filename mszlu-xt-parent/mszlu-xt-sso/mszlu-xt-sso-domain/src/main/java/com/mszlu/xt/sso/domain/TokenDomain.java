@@ -20,9 +20,9 @@ public class TokenDomain {
          * 2.检测redis是否有此token
          */
         try {
-            System.out.println("在解析之前的token是:" + token);
+//            System.out.println("在解析之前的token是:" + token);
             JwtUtil.parseJWT(token, LoginDomain.secretKey);
-            System.out.println("在get时的token是:" + token);
+//            System.out.println("在get时的token是:" + token);
             String userIdStr = tokenDomainRepository.redisTemplate.opsForValue().get(RedisKey.TOKEN + token);
             if (StringUtils.isBlank(userIdStr)) {
                 return null;

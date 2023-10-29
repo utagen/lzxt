@@ -30,4 +30,14 @@ public class TopicApi {
     public CallResult jump(@RequestBody TopicParam topicParam){
         return topicService.jump(topicParam);
     }
+
+    @PostMapping(value = "practiceHistory")
+    public CallResult practiceHistory(@RequestBody TopicParam topicParam){
+        return topicService.practiceHistory(topicParam);
+    }
+
+    @PostMapping(value = "userProblemSearch")
+    public CallResult userProblemSearch(@RequestBody TopicParam topicParam){
+        return topicService.userProblemSearch(topicParam);
+    }
 }

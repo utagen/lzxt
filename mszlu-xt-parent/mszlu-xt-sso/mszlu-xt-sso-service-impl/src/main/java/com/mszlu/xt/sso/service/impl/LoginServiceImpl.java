@@ -46,6 +46,11 @@ public class LoginServiceImpl extends AbstractService implements LoginService {
                 //写业务逻辑的
                 return loginDomain.wxLoginCallBack();
             }
+
+            @Override
+            public void finishUp(CallResult<Object> callResult) {
+                loginDomain.wxLoginCallBackFinishUp(callResult);
+            }
         });
     }
 
