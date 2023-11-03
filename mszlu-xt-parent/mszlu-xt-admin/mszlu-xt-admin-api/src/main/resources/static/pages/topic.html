@@ -833,7 +833,7 @@
 
                     const params = {
                         "page":this.pagination.currentPage,
-                        "pageSize":20,
+                        "pageSize":this.pagination.pageSize,
                         "topicTitle":this.pagination.queryString,
                         "subjectId":this.pagination.topicSubject};
                     axios.post("/lzadmin/topic/findPage",params).then((res)=>{

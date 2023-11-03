@@ -19,7 +19,19 @@ public class CouponDomain {
         return couponDomainRepository.findUserCouponByUserId(userId);
     }
 
+    public UserCoupon findUserCouponByUserId(Long userId, Long couponId) {
+        return couponDomainRepository.findUserCouponByUserId(userId, couponId);
+    }
+
     public Coupon findCouponById(Long couponId) {
         return couponDomainRepository.findCouponById(couponId);
+    }
+
+    public void updateCouponStatus(UserCoupon userCoupon) {
+        couponDomainRepository.updateCouponStatus(userCoupon);
+    }
+
+    public void updateCouponNoUseStatus(Long userId, Long couponId, int frontStatusCode) {
+        couponDomainRepository.updateCouponNoUseStatus(userId, couponId, frontStatusCode);
     }
 }

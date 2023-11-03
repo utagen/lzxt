@@ -18,7 +18,12 @@ import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -105,6 +110,9 @@ public class LoginDomain {
                 user.setSchool("");
                 this.loginDomainRepository.createUserDomain(new UserParam()).saveUser(user);
                 isNew = true;
+                //新用户
+                //判断是否有邀请信息
+                fillInvite(user);
             }
 
             //5. 使用jwt技术，生成token，需要把token存储起来
@@ -139,6 +147,34 @@ public class LoginDomain {
             e.printStackTrace();
             return CallResult.fail(BusinessCodeEnum.LOGIN_WX_NOT_USER_INFO.getCode(),"授权问题,无法获取用户信息");
         }
+    }
+
+    /**
+     * 邀请信息
+     * @param user
+     */
+    private void fillInvite(User user) {
+        //_i_ga_b_ weq = billType 有可能是有多个
+        HttpServletRequest request = this.loginParam.getRequest();
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return;
+        }
+        List<Map<String, String>> inviteMapList = new ArrayList<>();
+        for (Cookie cookie : cookies) {
+            String name = cookie.getName();
+            String[] strs = name.split("_i_ga_b_");
+            if (strs.length == 2) {
+                String billType = strs[1];
+                Map<String, String> map = new HashMap<>();
+                map.put("billType", billType);
+                map.put("userId", cookie.getValue());
+                inviteMapList.add(map);
+            }
+        }
+        //由于邀请不是必要逻辑，不能影响登录逻辑，这个逻辑是可以被拆分出去的
+        //拆分业务逻辑 1. mq 2. 线程池
+        this.loginDomainRepository.inviteThread.fillInvite(inviteMapList, user);
     }
 
     public String buildGzhUrl() {

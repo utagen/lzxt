@@ -11,6 +11,7 @@ import com.mszlu.xt.sso.dao.data.User;
 import com.mszlu.xt.sso.dao.mongo.data.UserLog;
 import com.mszlu.xt.sso.domain.LoginDomain;
 import com.mszlu.xt.sso.domain.UserDomain;
+import com.mszlu.xt.sso.domain.thread.InviteThread;
 import com.mszlu.xt.sso.domain.thread.LogThread;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.api.WxConsts;
@@ -41,6 +42,8 @@ public class LoginDomainRepository {
     private WxOpenConfig wxOpenConfig;
     @Autowired
     private UserDomainRepository userDomainRepository;
+    @Autowired
+    public InviteThread inviteThread;
 
     public LoginDomain createDomain(LoginParam loginParam) {
         return new LoginDomain(this, loginParam);

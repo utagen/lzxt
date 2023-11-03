@@ -25,13 +25,16 @@
             </div>
             <div class="app-container">
                 <div class="box">
+
                     <div class="filter-container">
                         <el-input placeholder="学科名称" v-model="pagination.queryString" style="width: 200px;" class="filter-item"></el-input>
                         <el-button @click="findPage()" class="dalfBut">查询</el-button>
                         <el-button type="primary" class="butT" @click="handleCreate()">新建学科</el-button>
                     </div>
+
+
                     <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
-                        <el-table-column  align="center" label="序号" prop="numberId"></el-table-column>
+                        <el-table-column  align="center" label="序号" prop="id"></el-table-column>
                         <el-table-column label="学科名称" align="center" prop="subjectName">
                         </el-table-column>
                         <el-table-column label="学科年级" align="center" prop="subjectGrade">
@@ -50,6 +53,7 @@
                             </template>
                         </el-table-column>
                     </el-table>
+
                     <div class="pagination-container">
                         <el-pagination
                             class="pagiantion"
@@ -60,6 +64,7 @@
                             :total="pagination.total">
                         </el-pagination>
                     </div>
+
                     <!-- 新增标签弹层 -->
                     <div class="add-form">
                         <el-dialog title="新增学科" :visible.sync="dialogFormVisible">

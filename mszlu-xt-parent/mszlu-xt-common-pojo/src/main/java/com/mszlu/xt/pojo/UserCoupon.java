@@ -7,7 +7,7 @@ public class UserCoupon {
     private Long id;
     private Long userId;
     private Long couponId;
-    // 0 未使用 1 已使用 2过期
+    // 0 未使用 1 已使用 2过期 4 已使用未消费
     private Integer status;
 
     private Long startTime;
