@@ -8,10 +8,10 @@
     <meta name="description" content="中小学题库大全">
     <meta name="keywords" content="中小学题库大全">
     <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
-    <!-- 引入样式 -->
-    <link rel="stylesheet" href="../plugins/elementui/index.css">
-    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="../css/style.css">
+    <!-- 引入样式 http://loclahost:8228/lzadmin/plugins/xxx-->
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/plugins/elementui/index.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="${springMacroRequestContext.contextPath}/css/style.css">
     <style type="text/css">
     .el-main{
         position: absolute;
@@ -39,7 +39,7 @@
                         <el-dropdown class="avatar-container right-menu-item" trigger="click">
                             <div class="avatar-wrapper">
                                 <img src="../img/head_img.png" class="user-avatar">
-                                {{username}}
+                                ${username!'默认用户'}
                             </div>
                             <el-dropdown-menu slot="dropdown">
                                 <el-dropdown-item divided>
@@ -58,18 +58,23 @@
 
                 <el-aside width="200px">
                     <el-menu>
-                        <!--vue的v-for循环-->
-                        <el-submenu v-for="menu in menuList" :index="menu.path">
-                            <template slot="title">
-                                <i class="fa" :class="menu.icon"></i>
-                                {{menu.title}}
-                            </template>
-                            <template v-for="child in menu.children">
-                                <el-menu-item :index="child.path">
-                                    <a :href="child.linkUrl" target="right">{{child.title}}</a>
-                                </el-menu-item>
-                            </template>
-                        </el-submenu>
+                        <!--freemarker有标签指令 list指令-->
+                        <#list menuList as menu>
+                            <el-submenu index="${menu.path}">
+                                <template slot="title">
+                                    <i class="fa" class="${menu.icon}"></i>
+                                    ${menu.title}
+                                </template>
+                                <#list menu.children as child>
+                                    <template>
+                                        <el-menu-item index="${child.path}">
+                                            <!--contextPath /lzadmin-->
+                                            <a href="${springMacroRequestContext.contextPath+ "/pages/" + child.linkUrl}" target="right">${child.title}</a>
+                                        </el-menu-item>
+                                    </template>
+                                </#list>
+                            </el-submenu>
+                        </#list>
                     </el-menu>
                 </el-aside>
 
@@ -83,10 +88,10 @@
     </div>
 </body>
 <!-- 引入组件库 -->
-<script src="../js/vue.js"></script>
-<script src="../plugins/elementui/index.js"></script>
-<script type="text/javascript" src="../js/jquery.min.js"></script>
-<script src="../js/axios-0.18.0.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/vue.js"></script>
+<script src="${springMacroRequestContext.contextPath}/plugins/elementui/index.js"></script>
+<script type="text/javascript" src="${springMacroRequestContext.contextPath}/js/jquery.min.js"></script>
+<script src="${springMacroRequestContext.contextPath}/js/axios-0.18.0.js"></script>
 <script>
     new Vue({
             el: '#app',
@@ -94,137 +99,8 @@
 
             },
         created:function () {
-            axios.post("/lzadmin/user/userInfo").then((res)=>{
-                this.username = res.data.result;
-            });
-            axios.post("/lzadmin/user/menu/userMenuList").then((res)=>{
-                this.menuList = res.data.result;
-            })
         },
         data:{
-            username:"",
-            menuList:[
-                {
-                    "path": "1",
-                    "title": "内容管理",
-                    "icon":"fa-user-md",
-                    "children": [
-                        {
-                            "path": "/1-1",
-                            "title": "题库管理",
-                            "linkUrl":"topic.html",
-                            "children":[]
-                        },
-                        {
-                            "path": "/1-2",
-                            "title": "学科管理",
-                            "linkUrl":"subject.html",
-                            "children":[]
-                        },
-                        {
-                            "path": "/1-3",
-                            "title": "课程管理",
-                            "linkUrl":"course.html",
-                            "children":[]
-                        },
-                    ]
-                },
-                {
-                    "path": "2",
-                    "title": "订单管理",
-                    "icon":"fa-tty",
-                    "children": [
-                        {
-                            "path": "/2-1",
-                            "title": "订单管理",
-                            "linkUrl":"order.html",
-                            "children":[]
-                        },
-                        {
-                            "path": "/2-2",
-                            "title": "邀请信息",
-                            "linkUrl":"invite.html",
-                            "children":[]
-                        },
-                    ]
-                },
-
-                {
-                    "path": "3",
-                    "title": "网站管理",
-                    "icon":"fa-tty",
-                    "children": [
-                        {
-                            "path": "/3-2",
-                            "title": "新闻管理",
-                            "linkUrl":"news.html",
-                            "children":[]
-                        },
-                        {
-                            "path": "/3-3",
-                            "title": "案例管理",
-                            "linkUrl":"case.html",
-                            "children":[]
-                        },
-                    ]
-                },
-                {
-                    "path": "4",
-                    "title": "营销管理",
-                    "icon":"fa-tty",
-                    "children": [
-                        {
-                            "path": "/4-1",
-                            "title": "海报管理",
-                            "linkUrl":"bill.html",
-                            "children":[]
-                        },
-                        {
-                            "path": "/4-2",
-                            "title": "优惠券管理",
-                            "linkUrl":"coupon.html",
-                            "children":[]
-                        },
-                        {
-                            "path": "/4-3",
-                            "title": "用户管理",
-                            "linkUrl":"user.html",
-                            "children":[]
-                        },
-                    ]
-                },
-                {
-                    "path": "5",
-                    "title": "系统管理",
-                    "icon":"fa-tty",
-                    "children": [
-                        {
-                            "path": "/5-1",
-                            "title": "角色管理",
-                            "linkUrl":"role.html",
-                            "children":[]
-                        },
-                        {
-                            "path": "/5-2",
-                            "title": "权限管理",
-                            "linkUrl":"permission.html",
-                            "children":[]
-                        },
-                        {
-                            "path": "/5-3",
-                            "title": "用户管理",
-                            "linkUrl":"user.html",
-                            "children":[]
-                        },
-                        {
-                            "path": "/5-4",
-                            "title": "菜单管理",
-                            "linkUrl":"menu.html",
-                            "children":[]
-                        },
-                    ]
-                }
-            ]
         }
     });
     $(function() {
