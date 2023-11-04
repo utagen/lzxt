@@ -22,7 +22,6 @@ import com.mszlu.xt.web.model.params.TopicParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 
@@ -65,7 +64,7 @@ public class TopicDomain {
         //从课程立即学习进入 practiceId不传，但是如果从我的学习模块进入，会传递当前的练习id（学习记录id）
         //如果是从我的学习中 直接进入，根据学习记录id 进行查询
         //如果不是，根据传递的学科id，进行查询，判断是否进行过学习，上一次学习未完成不能开启下一次练习
-        Long practiceId = this.topicParam.getPracticeId();
+        String practiceId = this.topicParam.getPracticeId();
         UserHistory userHistory = null;
         if (practiceId == null) {
             userHistory = this.topicDomainRepository.createUserHistoryDomain(null).findUserHistory(userId,subjectId, HistoryStatus.NO_FINISH.getCode());
@@ -327,7 +326,7 @@ public class TopicDomain {
         //检查业务
         //主要检查  参数所对应的数据 是否合法 比如 题目是否存在 练习是否正常（未完成可练习）
         Long topicId = topicParam.getTopicId();
-        Long practiceId = topicParam.getPracticeId();
+        String practiceId = topicParam.getPracticeId();
         Long userId = UserThreadLocal.get();
         Topic topic = this.topicDomainRepository.findTopicById(topicId);
         if (topic == null){
@@ -358,7 +357,7 @@ public class TopicDomain {
     public CallResult<Object> submit() {
         Integer topicType = topic.getTopicType();
         Long topicId = topicParam.getTopicId();
-        Long practiceId = topicParam.getPracticeId();
+        String practiceId = topicParam.getPracticeId();
         Long userId = UserThreadLocal.get();
         String answer = topicParam.getAnswer();
         String topicAnswer = topic.getTopicAnswer();
@@ -464,7 +463,7 @@ public class TopicDomain {
             return CallResult.fail(BusinessCodeEnum.TOPIC_PARAM_ERROR.getCode(),"参数有误");
         }
         Long userId = UserThreadLocal.get();
-        Long historyId = this.topicParam.getPracticeId();
+        String historyId = this.topicParam.getPracticeId();
         UserHistory userHistory = this.topicDomainRepository.createUserHistoryDomain(null).findUserHistoryById(historyId);
         Long topicId = this.topicDomainRepository.createUserPracticeDomain(null).findUserPractice(userId,userHistory.getId(),page);
         TopicDTO topic = this.topicDomainRepository.findTopicAnswer(topicId,userId,userHistory.getId());
@@ -475,5 +474,94 @@ public class TopicDomain {
         map.put("progress",userHistory.getProgress());
         map.put("topic",topicModelView);
         return CallResult.success(map);
+    }
+
+    public CallResult<Object> practiceHistory() {
+        Long userId = UserThreadLocal.get();
+        Integer page = this.topicParam.getPage();
+        Integer pageSize = this.topicParam.getPageSize();
+        Page<UserHistory> userHistoryPage = this.topicDomainRepository.createUserHistoryDomain(null).findUserHistoryList(userId,page,pageSize);
+
+        List<UserHistory> userHistoryList = userHistoryPage.getRecords();
+
+        List<UserHistoryModel> userHistoryModelList = new ArrayList<>();
+
+        for (UserHistory userHistory : userHistoryList) {
+            UserHistoryModel userHistoryModel = new UserHistoryModel();
+            userHistoryModel.setId(userHistory.getId().toString());
+            userHistoryModel.setCreateTime(new DateTime(userHistory.getCreateTime()).toString("yyyy-MM-dd HH:mm:ss"));
+            userHistoryModel.setHistoryStatus(userHistory.getHistoryStatus());
+            SubjectModel subject = this.topicDomainRepository.createSubjectDomain(null).findSubject(userHistory.getSubjectId());
+            userHistoryModel.setSubjectName(subject.getSubjectName()+" "+subject.getSubjectGrade()+" "+subject.getSubjectTerm());
+            userHistoryModel.setSubjectId(subject.getId());
+            userHistoryModel.setFinishTime(userHistory.getFinishTime() == 0 ? "":new DateTime(userHistory.getFinishTime()).toString("yyyy-MM-dd HH:mm:ss"));
+            List<Integer> subjectUnitList = JSON.parseArray(userHistory.getSubjectUnits(), Integer.class);
+            userHistoryModel.setSubjectUnitList(subjectUnitList);
+            userHistoryModel.setUseTime(userHistory.getFinishTime() == 0 ? "":useTime(userHistory.getFinishTime(),userHistory.getCreateTime()));
+            List<Long> courseIdList = this.topicDomainRepository.createCourseDomain(null).findCourseIdListBySubjectId(subject.getId());
+            int count = this.topicDomainRepository.createUserCourseDomain(null).countUserCourseInCourseIdList(userId,courseIdList,System.currentTimeMillis());
+            if (count > 0){
+                //判断是否此学习 还在购买的 有效期内
+                userHistoryModel.setStatus(0);
+            }else{
+                userHistoryModel.setStatus(1);
+            }
+            userHistoryModelList.add(userHistoryModel);
+        }
+
+        ListPageModel<UserHistoryModel> listModel = new ListPageModel<>();
+        listModel.setList(userHistoryModelList);
+        listModel.setSize(userHistoryPage.getTotal());
+        listModel.setPage(page);
+        listModel.setPageSize(pageSize);
+        listModel.setPageCount(userHistoryPage.getPages());
+        return CallResult.success(listModel);
+    }
+
+    public CallResult<Object> userProblemSearch() {
+        int page = this.topicParam.getPage();
+        int pageSize = this.topicParam.getPageSize();
+        String subjectName = this.topicParam.getSubjectName();
+        String subjectGrade = this.topicParam.getSubjectGrade();
+        String subjectTerm = this.topicParam.getSubjectTerm();
+        Long userId = UserThreadLocal.get();
+        //去查询 是否有 查询的学科条件
+        Long searchSubjectId = this.topicDomainRepository.createSubjectDomain(null).findSubjectByInfo(subjectName,subjectGrade,subjectTerm);
+        Page<UserProblem> userProblemListPage = null;
+        if (searchSubjectId == null){
+            userProblemListPage = this.topicDomainRepository.createUserProblem(null).findUserProblemList(userId, ErrorStatus.NO_SOLVE.getCode(),page,pageSize);
+        }else{
+            userProblemListPage = this.topicDomainRepository.createUserProblem(null).findUserProblemListBySubjectId(searchSubjectId,userId, ErrorStatus.NO_SOLVE.getCode(),page,pageSize);
+        }
+        List<UserProblemModel> userProblemModelList = new ArrayList<>();
+        List<UserProblem> userProblemList = userProblemListPage.getRecords();
+        for (UserProblem userProblem : userProblemList){
+            Long topicId = userProblem.getTopicId();
+            Long subjectId = userProblem.getSubjectId();
+            Topic topic = this.topicDomainRepository.findTopicById(topicId);
+            TopicModelView topicModelView = getTopicModelView(topic);
+            SubjectModel subject = this.topicDomainRepository.createSubjectDomain(null).findSubject(subjectId);
+            UserProblemModel userProblemModel = new UserProblemModel();
+            userProblemModel.setErrorCount(userProblem.getErrorCount());
+            userProblemModel.setSubject(subject);
+            userProblemModel.setTopic(topicModelView);
+            userProblemModel.setProblemId(userProblem.getId());
+            userProblemModel.setErrorAnswer(userProblem.getErrorAnswer());
+            userProblemModel.setErrorTime(new DateTime(userProblem.getErrorTime()).toString("yyyy-MM-dd HH:mm:ss"));
+            userProblemModelList.add(userProblemModel);
+        }
+        ListPageModel<UserProblemModel> listPageModel = new ListPageModel<>();
+        listPageModel.setList(userProblemModelList);
+        listPageModel.setPage(page);
+        listPageModel.setPageCount(pageSize);
+        listPageModel.setSize((int) userProblemListPage.getTotal());
+        return CallResult.success(listPageModel);
+
+    }
+
+    public CallResult<Object> cancel() {
+        String practiceId = this.topicParam.getPracticeId();
+        this.topicDomainRepository.deletePracticeById(practiceId);
+        return CallResult.success();
     }
 }

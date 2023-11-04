@@ -25,18 +25,23 @@ public class CourseApi {
     }
 
     @RequestMapping("subjectInfo")
-    public CallResult subjectInfo(@RequestBody CourseParam courseParam){
+    public CallResult subjectInfo(@RequestBody CourseParam courseParam) {
         return courseService.subjectInfo(courseParam);
     }
 
     @PostMapping(value = "courseDetail")
-    public CallResult courseDetail(@RequestBody CourseParam courseParam){
+    public CallResult courseDetail(@RequestBody CourseParam courseParam) {
         return courseService.courseDetail(courseParam);
     }
 
     @PostMapping(value = "myCoupon")
-    public CallResult myCoupon(@RequestBody CourseParam courseParam){
+    public CallResult myCoupon(@RequestBody CourseParam courseParam) {
         return courseService.myCoupon(courseParam);
     }
 
+    @PostMapping(value = "myCourse")
+    public CallResult myCourse() {
+        CourseParam courseParam = new CourseParam();
+        return courseService.myCourse(courseParam);
+    }
 }

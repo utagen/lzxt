@@ -41,7 +41,7 @@ public class TopicParam {
     private String subjectGrade;
     private String subjectTerm;
 
-    private Long practiceId;
+    private String practiceId;
 
     private Long courseId;
 }

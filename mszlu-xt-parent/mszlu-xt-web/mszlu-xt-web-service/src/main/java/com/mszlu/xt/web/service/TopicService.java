@@ -28,4 +28,11 @@ public interface TopicService {
      * @return
      */
     CallResult userProblemSearch(TopicParam topicParam);
+
+    /**
+     * 取消本次练习
+     * @param topicParam
+     * @return
+     */
+    CallResult cancel(TopicParam topicParam);
 }

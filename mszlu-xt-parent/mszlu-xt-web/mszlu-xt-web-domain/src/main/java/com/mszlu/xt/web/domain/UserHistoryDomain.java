@@ -22,7 +22,7 @@ public class UserHistoryDomain {
         return userHistoryDomainRepository.findUserHistory(userId,subjectId,historyStatus);
     }
 
-    public UserHistory findUserHistoryById(Long id) {
+    public UserHistory findUserHistoryById(String id) {
         return userHistoryDomainRepository.findUserHistoryById(id);
     }
 

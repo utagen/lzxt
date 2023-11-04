@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mszlu.xt.common.model.CallResult;
 import com.mszlu.xt.pojo.UserHistory;
 import com.mszlu.xt.web.dao.UserHistoryMapper;
 import com.mszlu.xt.web.domain.UserHistoryDomain;
@@ -35,7 +36,7 @@ public class UserHistoryDomainRepository {
         return userHistoryMapper.selectOne(queryWrapper);
     }
 
-    public UserHistory findUserHistoryById(Long id) {
+    public UserHistory findUserHistoryById(String id) {
         return userHistoryMapper.selectById(id);
     }
 
@@ -81,5 +82,9 @@ public class UserHistoryDomainRepository {
         LambdaQueryWrapper<UserHistory> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.eq(UserHistory::getUserId,userId);
         return userHistoryMapper.selectPage(new Page<>(page,pageSize), queryWrapper);
+    }
+
+    public void deletePracticeById(String practiceId) {
+        userHistoryMapper.deleteById(practiceId);
     }
 }

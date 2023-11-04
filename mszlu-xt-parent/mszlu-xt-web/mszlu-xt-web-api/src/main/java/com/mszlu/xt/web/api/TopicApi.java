@@ -40,4 +40,9 @@ public class TopicApi {
     public CallResult userProblemSearch(@RequestBody TopicParam topicParam){
         return topicService.userProblemSearch(topicParam);
     }
+
+    @PostMapping("cancel")
+    public CallResult cancel(@RequestBody TopicParam topicParam) {
+        return topicService.cancel(topicParam);
+    }
 }

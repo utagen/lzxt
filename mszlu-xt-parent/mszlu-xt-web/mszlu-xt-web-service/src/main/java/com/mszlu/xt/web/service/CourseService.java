@@ -26,4 +26,11 @@ public interface CourseService {
     CallResult courseDetail(CourseParam courseParam);
 
     CallResult myCoupon(CourseParam courseParam);
+
+    /**
+     * 查询我购买的课程列表
+     * @param courseParam
+     * @return
+     */
+    CallResult myCourse(CourseParam courseParam);
 }

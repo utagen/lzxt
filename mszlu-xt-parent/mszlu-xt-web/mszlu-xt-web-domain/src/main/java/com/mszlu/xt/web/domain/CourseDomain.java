@@ -14,6 +14,7 @@ import com.mszlu.xt.web.model.params.CourseParam;
 import com.mszlu.xt.web.model.params.SubjectParam;
 import com.mszlu.xt.web.model.params.CouponParam;
 import com.mszlu.xt.web.model.params.UserCourseParam;
+import org.apache.catalina.User;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
@@ -261,6 +262,35 @@ public class CourseDomain {
         }
 
         return CallResult.success(userCouponModelList);
+    }
+
+    public CallResult<Object> myCourse() {
+        /*
+        * 1. 查询我购买的课程 t_user_course
+        *
+        */
+        Long userId = UserThreadLocal.get();
+        List<UserCourse> userCourseList = this.courseDomainRepository.createUserCourseDomain(null).findUserCourseList(userId);
+        List<UserCourseModel> userCourseModels = new ArrayList<>();
+        Long currentTime = System.currentTimeMillis();
+        for (UserCourse userCourse : userCourseList) {
+            UserCourseModel userCourseModel = new UserCourseModel();
+            Course course = this.courseDomainRepository.findCourseById(userCourse.getCourseId());
+            userCourseModel.setCourseName(course.getCourseName());
+            if (currentTime > userCourse.getExpireTime()){
+                userCourseModel.setStatus(2);
+            }else {
+                userCourseModel.setStatus(1);
+            }
+            userCourseModel.setBuyTime(new DateTime(userCourse.getCreateTime()).toString("yyyy年MM月dd日"));
+            userCourseModel.setExpireTime(new DateTime(userCourse.getExpireTime()).toString("yyyy年MM月dd日"));
+            List<SubjectModel> subjectInfoByCourseId = this.courseDomainRepository.createSubjectDomain(new SubjectParam()).findSubjectListByCourseId(userCourse.getCourseId());
+            Integer count = this.courseDomainRepository.createUserHistoryDomain(null).countUserHistoryBySubjectList(userId,subjectInfoByCourseId);
+            userCourseModel.setStudyCount(count);
+            userCourseModel.setCourseId(course.getId());
+            userCourseModels.add(userCourseModel);
+        }
+        return CallResult.success(userCourseModels);
     }
 
 

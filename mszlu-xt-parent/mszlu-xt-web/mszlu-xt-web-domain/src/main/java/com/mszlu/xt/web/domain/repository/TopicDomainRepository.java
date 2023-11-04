@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.mszlu.xt.common.model.CallResult;
 import com.mszlu.xt.pojo.Topic;
 import com.mszlu.xt.pojo.UserPractice;
 import com.mszlu.xt.web.dao.TopicMapper;
@@ -90,5 +91,9 @@ public class TopicDomainRepository {
 
     public UserProblemDomain createUserProblem(UserProblemParam userProblemParam) {
         return userProblemDomainRepository.createDomain(userProblemParam);
+    }
+
+    public void deletePracticeById(String practiceId) {
+        userHistoryDomainRepository.deletePracticeById(practiceId);
     }
 }
